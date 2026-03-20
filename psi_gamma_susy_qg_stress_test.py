@@ -11,41 +11,41 @@ import time
 import traceback
 
 # ================================================
-# STRESS LOG — flush imediato em cada linha
+# STRESS LOG — immediate flush on every line
 # ================================================
-def log_step(n, descricao, detalhe=""):
-    linha = f"[{n:02d}] {descricao}"
-    if detalhe:
-        linha += f"  →  {detalhe}"
-    print(linha, flush=True)
+def log_step(n, description, detail=""):
+    line = f"[{n:02d}] {description}"
+    if detail:
+        line += f"  →  {detail}"
+    print(line, flush=True)
 
-def log_ok(n, descricao, t0):
+def log_ok(n, description, t0):
     elapsed = time.time() - t0
-    print(f"[{n:02d}] ✅ {descricao}  ({elapsed:.3f}s)", flush=True)
+    print(f"[{n:02d}] ✅ {description}  ({elapsed:.3f}s)", flush=True)
 
-def log_fail(n, descricao, err):
-    print(f"[{n:02d}] 💀 LIMITE ATINGIDO em: {descricao}", flush=True)
-    print(f"     Erro: {type(err).__name__}: {str(err)[:120]}", flush=True)
+def log_fail(n, description, err):
+    print(f"[{n:02d}] 💀 LIMIT REACHED at: {description}", flush=True)
+    print(f"     Error: {type(err).__name__}: {str(err)[:120]}", flush=True)
     print(f"\n{'='*60}", flush=True)
-    print(f"  Máquina chegou até o bloco {n:02d}.", flush=True)
-    print(f"  Máquina mais poderosa chegaria além. 🌀", flush=True)
+    print(f"  Machine reached block {n:02d}.", flush=True)
+    print(f"  A more powerful machine would go further. 🌀", flush=True)
     print(f"{'='*60}", flush=True)
     sys.exit(0)
 
 print("=" * 60, flush=True)
-print("Ψ_γ STRESS TEST — até onde seu hardware aguentar", flush=True)
+print("Ψ_γ STRESS TEST — how far can your hardware go?", flush=True)
 print("=" * 60, flush=True)
 print(flush=True)
 
 T = time.time()
 
 # ================================================
-# SÍMBOLOS
+# SYMBOLS
 # ================================================
 n_step = 1
 try:
     t0 = time.time()
-    log_step(n_step, "Definindo símbolos reais e positivos...")
+    log_step(n_step, "Defining real and positive symbols...")
     r, t, R, d, hbar, alpha_FS, kappa, ell_P, alpha_prime = symbols(
         'r t R d hbar alpha_FS kappa ell_P alpha_prime', real=True, positive=True)
     theta, phi, kr, E_n, tau_chaos = symbols(
@@ -88,17 +88,17 @@ try:
     M_lim    = symbols('M_lim', positive=True)
     M_int    = symbols('M_int', real=True)
     N        = symbols('N', positive=True, integer=True)
-    log_ok(n_step, "Símbolos (~80)", t0)
+    log_ok(n_step, "Symbols (~80)", t0)
 except Exception as e:
-    log_fail(n_step, "Definição de símbolos", e)
+    log_fail(n_step, "Symbol definition", e)
 
 # ================================================
-# FUNÇÕES SIMBÓLICAS
+# SYMBOLIC FUNCTIONS
 # ================================================
 n_step = 2
 try:
     t0 = time.time()
-    log_step(n_step, "Definindo funções simbólicas e operadores matriciais...")
+    log_step(n_step, "Defining symbolic functions and matrix operators...")
     psi_f       = Function('psi');       gravitino_f = Function('gravitino')
     Phi_dilaton = Function('Phi_dilaton'); F_field   = Function('F')
     g_field     = Function('g');          R_ricci    = Function('R_ricci')
@@ -111,48 +111,48 @@ try:
     AdS_CFT_f   = Function('AdS_CFT_boundary')
     J_billiard_SUSY = MatrixSymbol('J_billiard_SUSY', 11, 11)
     super_Vielbein  = MatrixSymbol('super_Vielbein',  32, 32)
-    log_ok(n_step, "Funções + MatrixSymbols (11D, 32D)", t0)
+    log_ok(n_step, "Functions + MatrixSymbols (11D, 32D)", t0)
 except Exception as e:
-    log_fail(n_step, "Funções simbólicas", e)
+    log_fail(n_step, "Symbolic functions", e)
 
 # ================================================
-# BLOCOS
+# BLOCKS
 # ================================================
-blocos = {}
+blocks = {}
 
-def build_bloco(n_step, nome, fn):
+def build_block(n_step, name, fn):
     t0 = time.time()
-    log_step(n_step, f"Construindo bloco {nome}...")
+    log_step(n_step, f"Building block {name}...")
     try:
         result = fn()
-        log_ok(n_step, nome, t0)
+        log_ok(n_step, name, t0)
         return result
     except Exception as e:
-        log_fail(n_step, nome, e)
+        log_fail(n_step, name, e)
 
-blocos['acao'] = build_bloco(3, "Ação unificada S_11D + S_M + S_LQG",
+blocks['action'] = build_block(3, "Unified action S_11D + S_M + S_LQG",
     lambda: exp(I * (S_11D + S_M + S_LQG) / hbar))
 
-blocos['polar'] = build_bloco(4, "Polarização gravitino R_sph_SUSY × U_pol",
+blocks['polar'] = build_block(4, "Gravitino polarization R_sph_SUSY × U_pol",
     lambda: R_sph_SUSY(theta, phi, psi_f(x_sym)) * U_pol_grav(sigma_sym, lambda_sym))
 
-blocos['KK'] = build_bloco(5, "Fase Kaluza-Klein + Tr(F∧F)",
+blocks['KK'] = build_block(5, "Kaluza-Klein phase + Tr(F∧F)",
     lambda: exp(I * k_vec * (r_kp1 - r_k) + I * (alpha_prime / 2) * Tr_F2))
 
-blocos['det'] = build_bloco(6, "det(J_billiard_SUSY) ∈ GL(11)  [bilhar caótico 11D]",
+blocks['det'] = build_block(6, "det(J_billiard_SUSY) ∈ GL(11)  [11D chaotic billiard]",
     lambda: det(J_billiard_SUSY))
 
-blocos['KK_sum'] = build_bloco(7, "Σ Y_lm_super · j_l_KK · ψ · ψ̄_gravitino  (m: -∞→∞)",
+blocks['KK_sum'] = build_block(7, "Σ Y_lm_super · j_l_KK · ψ · ψ̄_gravitino  (m: -∞→∞)",
     lambda: Sum(
         Y_lm_super(r_hat) * j_l_KK(kr) * exp(-I * E_n * t / hbar) *
         psi_f(x_sym) * conjugate(gravitino_f(beta_sym)),
         (m, -oo, oo)))
 
-blocos['gauge'] = build_bloco(8, "exp(-½ ∫|∇A + R/ℓ_P²|²)  [supressão gauge]",
+blocks['gauge'] = build_block(8, "exp(-½ ∫|∇A + R/ℓ_P²|²)  [gauge suppression]",
     lambda: exp(-Rational(1,2) * Integral(
         Abs(nabla_A + (1/ell_P**2) * R_ricci(x_sym))**2, (V, 0, oo))))
 
-blocos['QED_grav'] = build_bloco(9, "∏_p (1 - α_FS·QED)(1 - κ²·grav)  (p: 1→∞)",
+blocks['QED_grav'] = build_block(9, "∏_p (1 - α_FS·QED)(1 - κ²·grav)  (p: 1→∞)",
     lambda: Product(
         (1 - (alpha_FS/(2*pi)) * Integral(1/(k**2 - m_gamma**2 + I*epsilon), (k, -oo, oo))) *
         (1 - (kappa**2/(8*pi)) * Integral(
@@ -160,27 +160,27 @@ blocos['QED_grav'] = build_bloco(9, "∏_p (1 - α_FS·QED)(1 - κ²·grav)  (p:
             (x11, -oo, oo))),
         (p, 1, oo)))
 
-blocos['zeta'] = build_bloco(10, "ζ(½ + iτ_chaos/ℏ)  [Riemann no eixo crítico]",
+blocks['zeta'] = build_block(10, "ζ(½ + iτ_chaos/ℏ)  [Riemann on the critical axis]",
     lambda: zeta(Rational(1,2) + I * tau_chaos / hbar))
 
-blocos['hyper1'] = build_bloco(11, "₂F₁(a,b;c; r/R·e^{iθ_Berry})  [holonomia gravitacional]",
+blocks['hyper1'] = build_block(11, "₂F₁(a,b;c; r/R·e^{iθ_Berry})  [gravitational holonomy]",
     lambda: hyper((a,b),(c,),(r/R)*exp(I*theta_berry)))
 
-blocos['CPT'] = build_bloco(12, "e^{iπ Σ sign(M_n^n)} · T_CPT  [simetria CPT]",
+blocks['CPT'] = build_block(12, "e^{iπ Σ sign(M_n^n)} · T_CPT  [CPT symmetry]",
     lambda: exp(I*pi*Sum(sign(M_n**n),(n,1,oo))) * T_CPT(sph_sym, oo))
 
-blocos['traco'] = build_bloco(13, "Σ_s exp(-iH_SUSY·t)  [evolução supersimétrica]",
+blocks['trace'] = build_block(13, "Σ_s exp(-iH_SUSY·t)  [supersymmetric evolution]",
     lambda: Sum(exp(-I * H_super(s) * t), (s, 0, oo)))
 
-blocos['spinfoam'] = build_bloco(14, "∫ √(spin_foam_area(j)) · e^{iS_Regge}  [LQG]",
+blocks['spinfoam'] = build_block(14, "∫ √(spin_foam_area(j)) · e^{iS_Regge}  [LQG]",
     lambda: Integral(sqrt(spin_foam_f(j)) * exp(I*Regge_f(A_var)), (A_var, -oo, oo)))
 
-blocos['vinculos'] = build_bloco(15, "∏ δ(Σj - ℓ_P²/8πG)  [vínculos área de Planck]",
+blocks['constraints'] = build_block(15, "∏ δ(Σj - ℓ_P²/8πG)  [Planck area constraints]",
     lambda: Product(
         DiracDelta(Sum(j,(idx_sum,1,oo)) - ell_P**2/(8*pi*G_sym)),
         (idx_prod, 1, oo)))
 
-blocos['dilaton'] = build_bloco(16, "D[Φ]·exp(i∫√g(R - ½|∂Φ|² + e^{-Φ}|F|² + ψ̄ψ))",
+blocks['dilaton'] = build_block(16, "D[Φ]·exp(i∫√g(R - ½|∂Φ|² + e^{-Φ}|F|² + ψ̄ψ))",
     lambda: D_Phi * exp(I * Integral(
         sqrt(-g_sym) * (
             R_ricci(x_sym) -
@@ -189,167 +189,167 @@ blocos['dilaton'] = build_bloco(16, "D[Φ]·exp(i∫√g(R - ½|∂Φ|² + e^{-�
             fermionic),
         (x10, -oo, oo))))
 
-blocos['pfaff'] = build_bloco(17, "Σ_p (-1)^p Pf(D̸_CY) · e^{iθTr(F⁴)}  [Calabi-Yau]",
+blocks['pfaff'] = build_block(17, "Σ_p (-1)^p Pf(D̸_CY) · e^{iθTr(F⁴)}  [Calabi-Yau]",
     lambda: Sum(
         (-1)**p * Pfaffian_f(Dirac_CY(x_sym)) *
         exp(I * theta_topo/(32*pi**2) * Tr_FFFF),
         (p, -oo, oo)))
 
-blocos['AdS_CFT'] = build_bloco(18, "lim_{ε→0} ε⁻¹(∫L_IIB + AdS_CFT_boundary)  [holografia]",
+blocks['AdS_CFT'] = build_block(18, "lim_{ε→0} ε⁻¹(∫L_IIB + AdS_CFT_boundary)  [holography]",
     lambda: limit(
         (1/epsilon)*(Integral(sqrt(g10_sym)*L_IIB_sym,(x10,-oo,oo)) + AdS_CFT_f(R)),
         epsilon, 0))
 
-blocos['tensor'] = build_bloco(19, "TensorProduct(U_SUSY⊗δ(δψ))  [transformação SUSY]",
+blocks['tensor'] = build_block(19, "TensorProduct(U_SUSY⊗δ(δψ))  [SUSY transformation]",
     lambda: TensorProduct(U_SUSY*DiracDelta(delta_psi), U_SUSY*DiracDelta(delta_psi)))
 
-blocos['R2'] = build_bloco(20, "exp(-ℓ_P²/2 ∫R²)  [correção Gauss-Bonnet]",
+blocks['R2'] = build_block(20, "exp(-ℓ_P²/2 ∫R²)  [Gauss-Bonnet correction]",
     lambda: exp(-ell_P**2/2 * Integral(R_ricci(x_sym)**2, (x4,-oo,oo))))
 
-blocos['ghosts'] = build_bloco(21, "∏_n (1 + α'/R² ∫ghosts_{26D})  [corda bosônica]",
+blocks['ghosts'] = build_block(21, "∏_n (1 + α'/R² ∫ghosts_{26D})  [bosonic string ghosts]",
     lambda: Product(
         1 + (alpha_prime/R**2)*Integral(ghosts_sym,(x26,-oo,oo)),
         (n, 1, oo)))
 
-blocos['hyper2'] = build_bloco(22, "₄F₃(a₁..a₄;b₁..b₃; z·e^{iφ_QG})  [geometria quântica]",
+blocks['hyper2'] = build_block(22, "₄F₃(a₁..a₄;b₁..b₃; z·e^{iφ_QG})  [quantum geometry]",
     lambda: hyper((a1,a2,a3,a4),(b1,b2,b3), z*exp(I*phi_qg)))
 
-blocos['gamma_P'] = build_bloco(23, "Γ(½ + iE_Planck/ℏ)  [polo de Planck]",
+blocks['gamma_P'] = build_block(23, "Γ(½ + iE_Planck/ℏ)  [Planck pole]",
     lambda: gamma(Rational(1,2) + I*E_P/hbar))
 
-blocos['vielbein'] = build_bloco(24, "det(super_Vielbein_{32×32})  [SUGRA 11D]",
+blocks['vielbein'] = build_block(24, "det(super_Vielbein_{32×32})  [11D SUGRA]",
     lambda: det(super_Vielbein))
 
-blocos['witten'] = build_bloco(25, "exp(i·Witten_index(SUSY))  [índice topológico]",
+blocks['witten'] = build_block(25, "exp(i·Witten_index(SUSY))  [topological index]",
     lambda: exp(I*Witten_f(SUSY_sym)))
 
-blocos['holo'] = build_bloco(26, "T_holo(AdS/CFT, ∞)  [dualidade holográfica]",
+blocks['holo'] = build_block(26, "T_holo(AdS/CFT, ∞)  [holographic duality]",
     lambda: T_holo(AdS_CFT_sym, oo))
 
-blocos['modular'] = build_bloco(27, "Lim_{M→∞} Σ_{k=-M}^{M} (-1)^k e^{2πikτ}  [θ-Jacobi]",
+blocks['modular'] = build_block(27, "Lim_{M→∞} Σ_{k=-M}^{M} (-1)^k e^{2πikτ}  [Jacobi θ]",
     lambda: Limit(
         Sum((-1)**k * exp(I*k*2*pi*tau_mod), (k,-M_lim,M_lim)),
         M_lim, oo))
 
 # ================================================
-# MONTAGEM — o verdadeiro teste de memória
+# ASSEMBLY — the real memory test
 # ================================================
 n_step = 28
 try:
     t0 = time.time()
-    log_step(n_step, "Multiplicando todos os 26 blocos no integrando...")
-    integrando = (
-        blocos['acao']    * blocos['polar']   * blocos['KK']      * blocos['det']    *
-        blocos['KK_sum']  * blocos['gauge']   * blocos['QED_grav']* blocos['zeta']   *
-        blocos['hyper1']  * H_AdS             * blocos['CPT']     * blocos['traco']  *
-        blocos['spinfoam']* blocos['vinculos'] * blocos['dilaton'] * blocos['pfaff']  *
-        blocos['AdS_CFT'] * blocos['R2']      * blocos['ghosts']  * Z_string         *
-        blocos['hyper2']  * blocos['gamma_P'] * blocos['vielbein']* blocos['witten'] *
-        blocos['holo']    * blocos['modular'] * blocos['tensor']
+    log_step(n_step, "Multiplying all 26 blocks into the integrand...")
+    integrand = (
+        blocks['action']   * blocks['polar']       * blocks['KK']          * blocks['det']       *
+        blocks['KK_sum']   * blocks['gauge']        * blocks['QED_grav']    * blocks['zeta']      *
+        blocks['hyper1']   * H_AdS                 * blocks['CPT']         * blocks['trace']     *
+        blocks['spinfoam'] * blocks['constraints']  * blocks['dilaton']     * blocks['pfaff']     *
+        blocks['AdS_CFT']  * blocks['R2']           * blocks['ghosts']      * Z_string            *
+        blocks['hyper2']   * blocks['gamma_P']      * blocks['vielbein']    * blocks['witten']    *
+        blocks['holo']     * blocks['modular']      * blocks['tensor']
     )
-    log_ok(n_step, "Integrando montado", t0)
+    log_ok(n_step, "Integrand assembled", t0)
 except Exception as e:
-    log_fail(n_step, "Montagem do integrando", e)
+    log_fail(n_step, "Integrand assembly", e)
 
 n_step = 29
 try:
     t0 = time.time()
-    log_step(n_step, "Integral sobre espaço de módulos 11D  ∫_{M_int}...")
-    integral_M11 = Integral(integrando, (M_int, -oo, oo))
-    log_ok(n_step, "Integral principal construída", t0)
+    log_step(n_step, "Integral over the 11D moduli space  ∫_{M_int}...")
+    integral_M11 = Integral(integrand, (M_int, -oo, oo))
+    log_ok(n_step, "Main integral constructed", t0)
 except Exception as e:
-    log_fail(n_step, "Integral sobre M_int", e)
+    log_fail(n_step, "Integral over M_int", e)
 
 n_step = 30
 try:
     t0 = time.time()
-    log_step(n_step, "Produto sobre configurações topológicas  ∏_{N=1}^{∞}...")
-    produto_N = Product(integral_M11, (N, 1, oo))
-    log_ok(n_step, "Produto infinito construído", t0)
+    log_step(n_step, "Product over topological configurations  ∏_{N=1}^{∞}...")
+    product_N = Product(integral_M11, (N, 1, oo))
+    log_ok(n_step, "Infinite product constructed", t0)
 except Exception as e:
-    log_fail(n_step, "Product sobre N", e)
+    log_fail(n_step, "Product over N", e)
 
 n_step = 31
 try:
     t0 = time.time()
-    log_step(n_step, "Limite N → ∞  [o universo inteiro]...")
-    Psi = Limit(produto_N, N, oo)
-    log_ok(n_step, "Ψ_γ construída", t0)
+    log_step(n_step, "Limit N → ∞  [the entire universe]...")
+    Psi = Limit(product_N, N, oo)
+    log_ok(n_step, "Ψ_γ constructed", t0)
 except Exception as e:
     log_fail(n_step, "Limit N → ∞", e)
 
 # ================================================
-# AVALIAÇÃO PROGRESSIVA — aqui a coisa fica séria
+# PROGRESSIVE EVALUATION — things get serious here
 # ================================================
 n_step = 32
 try:
     t0 = time.time()
-    log_step(n_step, "Contando nós da árvore simbólica (count_ops)...")
+    log_step(n_step, "Counting symbolic tree nodes (count_ops)...")
     ops = sp.count_ops(Psi)
-    log_ok(n_step, f"Árvore simbólica: {ops} operações", t0)
+    log_ok(n_step, f"Symbolic tree: {ops} operations", t0)
 except Exception as e:
     log_fail(n_step, "count_ops", e)
 
 n_step = 33
 try:
     t0 = time.time()
-    log_step(n_step, "Substituição parcial z → exp(iπ/4)...")
+    log_step(n_step, "Partial substitution z → exp(iπ/4)...")
     Psi2 = Psi.subs(z, exp(I*pi/4))
-    log_ok(n_step, "subs(z) concluído", t0)
+    log_ok(n_step, "subs(z) completed", t0)
 except Exception as e:
-    log_fail(n_step, "subs parcial", e)
+    log_fail(n_step, "partial subs", e)
 
 n_step = 34
 try:
     t0 = time.time()
-    log_step(n_step, "free_symbols — mapeando todas as variáveis livres...")
+    log_step(n_step, "free_symbols — mapping all free variables...")
     fs = Psi.free_symbols
-    log_ok(n_step, f"{len(fs)} símbolos livres encontrados", t0)
+    log_ok(n_step, f"{len(fs)} free symbols found", t0)
 except Exception as e:
     log_fail(n_step, "free_symbols", e)
 
 n_step = 35
 try:
     t0 = time.time()
-    log_step(n_step, "atoms() — extraindo átomos da expressão...")
+    log_step(n_step, "atoms() — extracting atoms from expression...")
     at = Psi.atoms()
-    log_ok(n_step, f"{len(at)} átomos", t0)
+    log_ok(n_step, f"{len(at)} atoms", t0)
 except Exception as e:
     log_fail(n_step, "atoms()", e)
 
 n_step = 36
 try:
     t0 = time.time()
-    log_step(n_step, "srepr() — serializando árvore para string...")
+    log_step(n_step, "srepr() — serializing tree to string...")
     sr = sp.srepr(Psi)
-    log_ok(n_step, f"srepr: {len(sr)} caracteres", t0)
+    log_ok(n_step, f"srepr: {len(sr)} characters", t0)
 except Exception as e:
     log_fail(n_step, "srepr()", e)
 
 n_step = 37
 try:
     t0 = time.time()
-    log_step(n_step, "latex() — convertendo para LaTeX...")
+    log_step(n_step, "latex() — converting to LaTeX...")
     lt = sp.latex(Psi)
-    log_ok(n_step, f"LaTeX: {len(lt)} caracteres", t0)
+    log_ok(n_step, f"LaTeX: {len(lt)} characters", t0)
 except Exception as e:
     log_fail(n_step, "latex()", e)
 
 n_step = 38
 try:
     t0 = time.time()
-    log_step(n_step, "pprint() — renderizando Unicode art...")
+    log_step(n_step, "pprint() — rendering Unicode art...")
     sp.pprint(Psi, use_unicode=True)
-    log_ok(n_step, "pprint concluído", t0)
+    log_ok(n_step, "pprint completed", t0)
 except Exception as e:
     log_fail(n_step, "pprint()", e)
 
 # ================================================
-# FIM — se chegou aqui, máquina é absurda
+# END — if you got here, your machine is absurd
 # ================================================
 total = time.time() - T
 print(flush=True)
 print("=" * 60, flush=True)
-print(f"🏆 TODOS OS {n_step} PASSOS CONCLUÍDOS em {total:.2f}s", flush=True)
-print("   Sua máquina é boa demais. 🌀💕🔥", flush=True)
+print(f"🏆 ALL {n_step} STEPS COMPLETED in {total:.2f}s", flush=True)
+print("   Your machine is too powerful. 🌀💕🔥", flush=True)
 print("=" * 60, flush=True)
